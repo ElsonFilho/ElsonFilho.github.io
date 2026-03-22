@@ -390,27 +390,18 @@ h2 {
 /* ══════════════════════════════════
    BLOG CAROUSEL
 ══════════════════════════════════ */
-.carousel-wrapper {
-  position: relative;
-}
-.carousel-viewport {
-  overflow: hidden;
-  border-radius: var(--r);
-}
+.carousel-wrapper { position: relative; }
+.carousel-viewport { overflow: hidden; border-radius: var(--r); }
 .carousel-track {
-  display: flex;
-  gap: 20px;
+  display: flex; gap: 20px;
   transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
   will-change: transform;
 }
 .blog-card {
   flex: 0 0 calc((100% - 40px) / 3);
-  min-width: 0;
-  text-decoration: none;
-  display: flex;
-  flex-direction: column;
-  border-radius: var(--r);
-  overflow: hidden;
+  min-width: 0; text-decoration: none;
+  display: flex; flex-direction: column;
+  border-radius: var(--r); overflow: hidden;
   transition: transform 0.25s, box-shadow 0.25s;
   background: var(--glass-bg);
   backdrop-filter: blur(18px) saturate(1.4);
@@ -425,8 +416,7 @@ h2 {
 }
 .blog-thumb img {
   width: 100%; height: 100%; object-fit: cover;
-  transition: transform 0.45s ease;
-  display: block;
+  transition: transform 0.45s ease; display: block;
 }
 .blog-card:hover .blog-thumb img { transform: scale(1.06); }
 .blog-thumb-fallback {
@@ -450,33 +440,30 @@ h2 {
 }
 .blog-card:hover .blog-arrow { gap: 9px; }
 
-/* Drag hint */
-.carousel-viewport {
-  cursor: grab;
-}
-.carousel-viewport.dragging {
-  cursor: grabbing;
-}
-.carousel-viewport.dragging .blog-card {
-  pointer-events: none; /* prevent accidental link clicks while dragging */
-}
-
-/* Dots only nav */
+/* Nav buttons */
 .carousel-nav {
   display: flex; align-items: center; justify-content: center;
-  gap: 10px; margin-top: 28px;
+  gap: 16px; margin-top: 36px;
 }
+.carousel-btn {
+  width: 44px; height: 44px; border-radius: 50%;
+  background: var(--glass-bg); border: 1px solid var(--glass-border);
+  backdrop-filter: blur(12px); cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--text-mid); transition: all 0.2s;
+}
+.carousel-btn:hover:not(:disabled) { border-color: var(--orange); color: var(--orange); background: var(--orange-bg); }
+.carousel-btn:disabled { opacity: 0.28; cursor: default; }
+.carousel-btn svg { width: 18px; height: 18px; }
+
+/* Dots */
+.carousel-dots { display: flex; gap: 8px; align-items: center; }
 .carousel-dot {
   width: 6px; height: 6px; border-radius: 50%;
   background: var(--text-muted); border: none; cursor: pointer;
-  transition: all 0.3s; padding: 0;
+  transition: all 0.25s; padding: 0;
 }
-.carousel-dot.active {
-  background: var(--orange);
-  transform: scale(1.5);
-  width: 20px;
-  border-radius: 3px;
-}
+.carousel-dot.active { background: var(--orange); transform: scale(1.35); }
 
 @media (max-width: 960px) {
   .blog-card { flex: 0 0 calc(100% - 20px); }
@@ -897,7 +884,15 @@ footer a:hover { color:var(--orange); }
     <div class="carousel-viewport" id="carouselViewport">
       <div class="carousel-track" id="carouselTrack"></div>
     </div>
-    <div class="carousel-nav" id="carouselDots"></div>
+    <div class="carousel-nav">
+      <button class="carousel-btn" id="carouselPrev" aria-label="Previous">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+      <div class="carousel-dots" id="carouselDots"></div>
+      <button class="carousel-btn" id="carouselNext" aria-label="Next">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+      </button>
+    </div>
   </div>
 </section>
 
@@ -1096,13 +1091,13 @@ document.querySelectorAll('.skill-row').forEach(el => so.observe(el));
 // ══ BLOG CAROUSEL ══
 (async function() {
   const VISIBLE = 3;
-  const SWIPE_THRESHOLD = 50; // px needed to trigger slide
   let current = 0;
   let maxIndex = 0;
 
-  const track     = document.getElementById('carouselTrack');
-  const viewport  = document.getElementById('carouselViewport');
-  const dotsEl    = document.getElementById('carouselDots');
+  const track    = document.getElementById('carouselTrack');
+  const dotsEl   = document.getElementById('carouselDots');
+  const btnPrev  = document.getElementById('carouselPrev');
+  const btnNext  = document.getElementById('carouselNext');
 
   // Parse DD/MM/YYYY → sortable number
   function parseDate(str) {
@@ -1191,61 +1186,13 @@ document.querySelectorAll('.skill-row').forEach(el => so.observe(el));
     track.style.transform = `translateX(-${current * cardWidth}px)`;
     document.querySelectorAll('.carousel-dot').forEach((d, i) =>
       d.classList.toggle('active', i === current));
+    if (btnPrev) btnPrev.disabled = current === 0;
+    if (btnNext) btnNext.disabled = current === maxIndex;
   }
 
-  // ── Drag / swipe handling ──
-  let dragStartX = 0;
-  let isDragging = false;
-
-  let hasMoved = false;
-
-  function onDragStart(x) {
-    dragStartX = x;
-    isDragging = true;
-    hasMoved = false;
-    viewport.classList.add('dragging');
-    track.style.transition = 'none';
-  }
-
-  function onDragEnd(x) {
-    if (!isDragging) return;
-    isDragging = false;
-    viewport.classList.remove('dragging');
-    track.style.transition = '';
-    const delta = dragStartX - x;
-    if (hasMoved && Math.abs(delta) >= SWIPE_THRESHOLD) {
-      goTo(current + (delta > 0 ? 1 : -1));
-    } else {
-      goTo(current); // snap back — treat as click, let browser handle it
-    }
-    hasMoved = false;
-  }
-
-  // Mouse
-  viewport.addEventListener('mousedown',  e => onDragStart(e.clientX));
-  window.addEventListener('mouseup',   e => { if (isDragging) onDragEnd(e.clientX); });
-  window.addEventListener('mousemove', e => {
-    if (!isDragging) return;
-    const cardEl = track.children[0];
-    if (!cardEl) return;
-    const delta = dragStartX - e.clientX;
-    if (Math.abs(delta) > 5) hasMoved = true;
-    const cardWidth = cardEl.offsetWidth + 20;
-    track.style.transform = `translateX(-${current * cardWidth + delta}px)`;
-  });
-
-  // Touch
-  viewport.addEventListener('touchstart', e => onDragStart(e.touches[0].clientX), { passive: true });
-  viewport.addEventListener('touchend',   e => onDragEnd(e.changedTouches[0].clientX));
-  viewport.addEventListener('touchmove',  e => {
-    if (!isDragging) return;
-    const cardEl = track.children[0];
-    if (!cardEl) return;
-    const cardWidth = cardEl.offsetWidth + 20;
-    const delta = dragStartX - e.touches[0].clientX;
-    track.style.transform = `translateX(-${current * cardWidth + delta}px)`;
-  }, { passive: true });
-
+  // ── Prev / Next buttons ──
+  if (btnPrev) btnPrev.addEventListener('click', () => goTo(current - 1));
+  if (btnNext) btnNext.addEventListener('click', () => goTo(current + 1));
   window.addEventListener('resize', () => goTo(current));
 
   // ── Init ──
