@@ -961,14 +961,14 @@ footer a:hover { color:var(--orange); }
       YouTube — personal journeys
     </a>
 
-    <!-- Email -->
-    <a href="/cdn-cgi/l/email-protection#751019061a1b18101b111006131c191d1a351a0001191a1a1e5b161a18" class="contact-link">
+    <!-- Email (built by JS to avoid Cloudflare mangling) -->
+    <a id="emailLink" class="contact-link" style="cursor:pointer">
       <div class="c-icon">
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
           <path d="M0 3v18h24v-18h-24zm21.518 2l-9.518 7.614-9.518-7.614h19.036zm-19.518 14v-11.59l7.901 6.248 2.438 1.888 2.442-1.888 7.901-6.248v11.59h-19z"/>
         </svg>
       </div>
-      <span class="__cf_email__" data-cfemail="73161f001c1d1e161d171600151a1f1b1c331c06071f1c1c185d101c1e">[email&#160;protected]</span>
+      <span id="emailText"></span>
     </a>
   </div>
   </div>
@@ -991,8 +991,20 @@ footer a:hover { color:var(--orange); }
   </div>
 </footer>
 
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+<script>
 document.documentElement.classList.add('js-ready');
+
+// ── EMAIL: built in JS so Cloudflare never sees it in HTML ──
+(function() {
+  var u = 'elsonmendesfilho';
+  var d = 'outlook.com';
+  var el = document.getElementById('emailLink');
+  var tx = document.getElementById('emailText');
+  if (el && tx) {
+    el.href = 'mailto:' + u + '@' + d;
+    tx.textContent = u + '@' + d;
+  }
+})();
 
 // ── CONTACT FORM ──
 document.getElementById('contactSend').addEventListener('click', async () => {
@@ -1185,24 +1197,28 @@ document.querySelectorAll('.skill-row').forEach(el => so.observe(el));
   let dragStartX = 0;
   let isDragging = false;
 
+  let hasMoved = false;
+
   function onDragStart(x) {
     dragStartX = x;
     isDragging = true;
+    hasMoved = false;
     viewport.classList.add('dragging');
-    track.style.transition = 'none'; // instant follow during drag
+    track.style.transition = 'none';
   }
 
   function onDragEnd(x) {
     if (!isDragging) return;
     isDragging = false;
     viewport.classList.remove('dragging');
-    track.style.transition = ''; // restore CSS transition
+    track.style.transition = '';
     const delta = dragStartX - x;
-    if (Math.abs(delta) >= SWIPE_THRESHOLD) {
+    if (hasMoved && Math.abs(delta) >= SWIPE_THRESHOLD) {
       goTo(current + (delta > 0 ? 1 : -1));
     } else {
-      goTo(current); // snap back
+      goTo(current); // snap back — treat as click, let browser handle it
     }
+    hasMoved = false;
   }
 
   // Mouse
@@ -1212,8 +1228,9 @@ document.querySelectorAll('.skill-row').forEach(el => so.observe(el));
     if (!isDragging) return;
     const cardEl = track.children[0];
     if (!cardEl) return;
-    const cardWidth = cardEl.offsetWidth + 20;
     const delta = dragStartX - e.clientX;
+    if (Math.abs(delta) > 5) hasMoved = true;
+    const cardWidth = cardEl.offsetWidth + 20;
     track.style.transform = `translateX(-${current * cardWidth + delta}px)`;
   });
 
