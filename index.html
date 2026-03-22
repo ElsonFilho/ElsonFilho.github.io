@@ -1080,12 +1080,13 @@ document.querySelectorAll('.skill-row').forEach(el => so.observe(el));
       if (!line) return null;
       // Split on commas but respect double-quoted fields
       const cols = line.split(/,(?=(?:[^"]*"[^"]*")*[^"]*$)/);
+      if (cols.length < 5) return null;
       return {
-        id:    cols[0]?.trim(),
-        date:  cols[1]?.trim(),
-        title: cols[2]?.trim().replace(/^"|"$/g, ''), // strip surrounding quotes
-        image: cols[3]?.trim(),
-        link:  cols[4]?.trim(),
+        id:    cols[0].trim(),
+        date:  cols[1].trim(),
+        title: cols[2].trim().replace(/^"|"$/g, ''),
+        image: cols[3].trim(),
+        link:  cols[4].trim(),
       };
     }).filter(a => a && a.id && a.date && a.link);
   }
