@@ -962,21 +962,21 @@ footer a:hover { color:var(--orange); }
     </a>
 
     <!-- Email -->
-    <a href="/cdn-cgi/l/email-protection#751019061a1b18101b111006131c191d1a351a0001191a1a1e5b161a18" class="contact-link">
+    <a href="mailto:elson.mendesfilho@gmail.com" class="contact-link">
       <div class="c-icon">
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
           <path d="M0 3v18h24v-18h-24zm21.518 2l-9.518 7.614-9.518-7.614h19.036zm-19.518 14v-11.59l7.901 6.248 2.438 1.888 2.442-1.888 7.901-6.248v11.59h-19z"/>
         </svg>
       </div>
-      <span class="__cf_email__" data-cfemail="73161f001c1d1e161d171600151a1f1b1c331c06071f1c1c185d101c1e">[email&#160;protected]</span>
+      elson.mendesfilho@gmail.com
     </a>
   </div>
   </div>
   <div class="contact-form reveal">
-    <div><label class="f-label">Name</label><input type="text" class="f-input" placeholder="Your name"></div>
-    <div><label class="f-label">Email</label><input type="email" class="f-input" placeholder="your@email.com"></div>
-    <div><label class="f-label">Message</label><textarea class="f-textarea" placeholder="Tell me about your project or opportunity..."></textarea></div>
-    <button class="btn btn-orange" style="width:100%;justify-content:center">Send Message →</button>
+    <div><label class="f-label">Name</label><input type="text" class="f-input" id="contactName" placeholder="Your name"></div>
+    <div><label class="f-label">Email</label><input type="email" class="f-input" id="contactEmail" placeholder="your@email.com"></div>
+    <div><label class="f-label">Message</label><textarea class="f-textarea" id="contactMessage" placeholder="Tell me about your project or opportunity..."></textarea></div>
+    <button class="btn btn-orange" id="contactSend" style="width:100%;justify-content:center">Send Message →</button>
   </div>
 </section>
 
@@ -992,6 +992,17 @@ footer a:hover { color:var(--orange); }
 
 <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 document.documentElement.classList.add('js-ready');
+
+// ── CONTACT FORM → mailto ──
+document.getElementById('contactSend').addEventListener('click', () => {
+  const name    = document.getElementById('contactName').value.trim();
+  const email   = document.getElementById('contactEmail').value.trim();
+  const message = document.getElementById('contactMessage').value.trim();
+  if (!name && !message) { alert('Please fill in your name and message.'); return; }
+  const subject = encodeURIComponent('Contact from portfolio' + (name ? ' — ' + name : ''));
+  const body    = encodeURIComponent((name ? 'Name: ' + name + '\n' : '') + (email ? 'Email: ' + email + '\n' : '') + '\n' + message);
+  window.location.href = `mailto:elson.mendesfilho@gmail.com?subject=${subject}&body=${body}`;
+});
 
 // Progress bar
 const bar = document.getElementById('progress-bar');
