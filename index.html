@@ -962,13 +962,13 @@ footer a:hover { color:var(--orange); }
     </a>
 
     <!-- Email -->
-    <a href="mailto:elson.mendesfilho@gmail.com" class="contact-link">
+    <a href="/cdn-cgi/l/email-protection#cbaea7b8a4a5e5a6aea5afaeb8ada2a7a3a48baca6aaa2a7e5a8a4a6" class="contact-link">
       <div class="c-icon">
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
           <path d="M0 3v18h24v-18h-24zm21.518 2l-9.518 7.614-9.518-7.614h19.036zm-19.518 14v-11.59l7.901 6.248 2.438 1.888 2.442-1.888 7.901-6.248v11.59h-19z"/>
         </svg>
       </div>
-      elson.mendesfilho@gmail.com
+      <span class="__cf_email__" data-cfemail="4a2f2639252464272f242e2f392c232622250a2d272b232664292527">[email&#160;protected]</span>
     </a>
   </div>
   </div>
@@ -990,7 +990,7 @@ footer a:hover { color:var(--orange); }
   </div>
 </footer>
 
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 document.documentElement.classList.add('js-ready');
 
 // ── CONTACT FORM → mailto ──
@@ -1074,16 +1074,25 @@ document.querySelectorAll('.skill-row').forEach(el => so.observe(el));
   }
 
   function parseCSV(text) {
-    const lines = text.trim().split('\n').slice(1); // skip header
-    return lines.map(line => {
+    const lines = text.trim().split('\n');
+    // Parse header to find column indices dynamically
+    const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
+    const idx = {
+      id:    headers.findIndex(h => h === 'id' || h === 'article'),
+      date:  headers.findIndex(h => h === 'date'),
+      title: headers.findIndex(h => h === 'title'),
+      image: headers.findIndex(h => h === 'image'),
+      link:  headers.findIndex(h => h === 'link'),
+    };
+    return lines.slice(1).map(line => {
       // Split on comma but respect quoted fields
       const cols = line.split(/,(?=(?:[^"]*"[^"]*")*[^"]*$)/);
       return {
-        id:    cols[0]?.trim(),
-        date:  cols[1]?.trim(),
-        title: cols[2]?.trim(),
-        image: cols[3]?.trim(),
-        link:  cols[4]?.trim(),
+        id:    cols[idx.id]?.trim(),
+        date:  cols[idx.date]?.trim(),
+        title: cols[idx.title]?.trim(),
+        image: cols[idx.image]?.trim(),
+        link:  cols[idx.link]?.trim(),
       };
     }).filter(a => a.id && a.date);
   }
@@ -1200,17 +1209,4 @@ document.querySelectorAll('.skill-row').forEach(el => so.observe(el));
   // ── Init ──
   const articles = await loadArticles();
   if (articles.length === 0) {
-    track.innerHTML = '<p style="color:var(--text-muted);padding:20px">No articles found. Make sure LinkedIn_Articles.csv is in the same folder as index.html.</p>';
-    return;
-  }
-
-  maxIndex = Math.max(0, articles.length - VISIBLE);
-  buildCards(articles);
-  buildDots(maxIndex + 1);
-  goTo(0);
-})();
-
-
-</script>
-</body>
-</html>
+    track.innerHTML = '<p style="color:var(--text-muted);padding:20px">N
